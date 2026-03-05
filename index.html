@@ -9,31 +9,64 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --gold: #d4af37; 
-            --creme: #fffdf5;
-            --accent: #bc6c25;
-            --soft: #fefae0;
+        :root { --gold: #d4af37; --creme: #fffdf5; }
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            color: #432818; 
+            background: var(--creme); 
+            margin: 0;
+            padding: 0;
+            width: 100%;
         }
-        body { font-family: 'Montserrat', sans-serif; color: #432818; overflow: hidden; background: var(--creme); }
         .serif { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-style: italic; }
         
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; width: 100vw; height: 100vh; pointer-events: none; }
         
-        .screen { display: none; height: 100vh; width: 100vw; position: fixed; top: 0; left: 0; padding: 1.5rem; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .active { display: flex; animation: fadeSlide 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+        /* AJUSTE RESPONSIVO NAS TELAS */
+        .screen { 
+            display: none; 
+            min-height: 100vh; /* Altura mínima, mas cresce se precisar */
+            width: 100%; 
+            padding: 2rem 1rem; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            overflow-y: auto; /* Permite scroll se o conteúdo for grande */
+            box-sizing: border-box;
+        }
+        .active { display: flex; animation: fadeSlide 0.6s ease-out forwards; }
         
-        @keyframes fadeSlide { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
-        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border-radius: 28px; border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .heart { position: absolute; font-size: 2rem; cursor: pointer; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
-        .star { position: absolute; font-size: 1.8rem; cursor: pointer; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5)); }
+        .glass { 
+            background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(10px); 
+            border-radius: 24px; 
+            border: 1px solid rgba(212, 175, 55, 0.2); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 400px; /* Limita largura no PC */
+        }
         
-        .btn-primary { background: var(--gold); color: white; border-radius: 99px; font-weight: 700; transition: all 0.3s; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
-        .btn-primary:active { scale: 0.95; }
+        .star { font-size: 2rem; cursor: pointer; transition: transform 0.2s; }
+        .btn-primary { 
+            background: var(--gold); 
+            color: white; 
+            border-radius: 99px; 
+            font-weight: 700; 
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            width: 100%;
+            max-width: 280px;
+        }
 
-        canvas { touch-action: none; border-radius: 12px; }
-        .photo-frame { border: 6px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .photo-frame { 
+            border: 6px solid white; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
+            background: white;
+        }
+        
+        /* Ajuste para o Canvas de Raspadinha não bugar no mobile */
+        canvas { max-width: 100%; height: auto; border-radius: 12px; }
     </style>
 </head>
 <body>
