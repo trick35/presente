@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Happy Birthday 🥳</title>
+    <link rel="icon" type="image/x-icon" href="icone.jpg" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --gold: #d4af37; 
+            --creme: #fffdf5;
+            --accent: #bc6c25;
+            --soft: #fefae0;
+        }
+        body { font-family: 'Montserrat', sans-serif; color: #432818; overflow: hidden; background: var(--creme); }
+        .serif { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-style: italic; }
+        
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; width: 100vw; height: 100vh; pointer-events: none; }
+        
+        .screen { display: none; height: 100vh; width: 100vw; position: fixed; top: 0; left: 0; padding: 1.5rem; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .active { display: flex; animation: fadeSlide 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+        
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border-radius: 28px; border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .heart { position: absolute; font-size: 2rem; cursor: pointer; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+        .star { position: absolute; font-size: 1.8rem; cursor: pointer; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5)); }
+        
+        .btn-primary { background: var(--gold); color: white; border-radius: 99px; font-weight: 700; transition: all 0.3s; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
+        .btn-primary:active { scale: 0.95; }
+
+        canvas { touch-action: none; border-radius: 12px; }
+        .photo-frame { border: 6px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <section id="s1" class="screen active">
+        <div class="glass p-8 space-y-6 max-w-sm">
+            <span class="text-xs tracking-[0.3em] uppercase text-amber-600 font-bold">Cheers to you</span>
+            <p id="t1" class="text-2xl serif opacity-0">Hoje o brinde é para você meu amor...</p>
+            <p id="t2" class="text-xl serif opacity-0">Sua vida é o motivo da nossa festa.</p>
+            <p id="t3" class="text-sm font-medium opacity-0">E cada detalhe seu é um presente para mim. ✨</p>
+            <button id="btn-start" onclick="next(2)" class="btn-primary mt-8 px-10 py-4 opacity-0">
+                BORA COMEMORAR →
+            </button>
+        </div>
+    </section>
+
+    <section id="s2" class="screen">
+        <div class="glass p-6 mb-4 z-10 pointer-events-none border-amber-200">
+            <h2 class="text-2xl serif text-amber-700">Estoure os balões da festa!</h2>
+            <p class="text-amber-600 font-bold text-xl mt-1"><span id="score">0</span> / 10</p>
+        </div>
+        <button onclick="next(3)" class="z-20 px-6 py-2 text-xs text-amber-700/50 underline">Pular jogo</button>
+        <div id="game-area" class="absolute inset-0 overflow-hidden"></div>
+    </section>
+
+    <section id="s3" class="screen">
+        <h2 class="mb-4 serif text-2xl text-amber-800">Clique nos ícones da nossa jornada...</h2>
+        <div id="universe" class="relative w-full h-48 mb-4"></div>
+        
+        <div id="mem-card" class="hidden glass p-4 w-full max-w-md text-left border-l-4 border-l-amber-400 flex flex-col gap-4">
+            <div class="w-full h-80 overflow-hidden rounded-xl bg-black/5 flex items-center justify-center">
+                <img id="mem-img" src="" alt="Momento" class="max-w-full max-h-full object-contain">
+            </div>
+            <p id="mem-text" class="serif text-lg text-slate-800 leading-tight"></p>
+            <button onclick="checkMemories()" class="self-end text-xs font-bold text-amber-600 uppercase border border-amber-200 px-3 py-1 rounded-full">Fechar</button>
+        </div>
+        
+        <button id="btn-to-letter" class="hidden btn-primary mt-8 px-10 py-4" onclick="next(4)">LER MINHA CARTA 💌</button>
+    </section>
+
+    <section id="s4" class="screen">
+        <div class="glass p-8 max-w-md text-left leading-relaxed bg-white/80">
+            <div id="typewriter" class="serif text-xl text-amber-950"></div>
+            <button id="btn-gift" class="hidden btn-primary mt-8 w-full py-4" onclick="next(5)">🎁 ONDE ESTÁ SEU PRESENTE?</button>
+        </div>
+    </section>
+
+    <section id="s5" class="screen bg-orange-50/30">
+        <div class="glass p-6 mb-8 border-dashed border-2 border-amber-300">
+            <h2 class="serif text-2xl text-amber-800">Sorte do Dia 🎰</h2>
+            <p class="text-xs text-amber-600 uppercase tracking-widest">Raspe o card premiado!</p>
+        </div>
+        <div class="grid grid-cols-2 gap-4 w-full max-w-xs">
+            <div class="relative h-24 bg-amber-100/50 rounded-xl overflow-hidden flex items-center justify-center border border-amber-200">
+                <span class="text-[10px] font-bold text-amber-800 opacity-40">Vale um cafuné 🫂</span>
+                <canvas id="c1" width="150" height="100" class="absolute top-0 left-0 z-10"></canvas>
+            </div>
+            <div class="relative h-24 bg-amber-100/50 rounded-xl overflow-hidden flex items-center justify-center border border-amber-200">
+                <span class="text-[10px] font-bold text-amber-800 opacity-40">Vale 10 beijinhos 💋</span>
+                <canvas id="c3" width="150" height="100" class="absolute top-0 left-0 z-10"></canvas>
+            </div>
+            <div id="card-correct" class="relative h-24 bg-white rounded-xl shadow-md overflow-hidden flex flex-col items-center justify-center border-2 border-transparent transition-all">
+                <span class="text-[10px] font-bold text-amber-600 uppercase">Ganhouuu! ✨</span>
+                <button onclick="next(6)" class="mt-1 px-4 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-full">RESGATAR 🔓</button>
+                <canvas id="c2" width="150" height="100" class="absolute top-0 left-0 z-10"></canvas>
+            </div>
+            <div class="relative h-24 bg-amber-100/50 rounded-xl overflow-hidden flex items-center justify-center border border-amber-200">
+                <span class="text-[10px] font-bold text-amber-800 opacity-40">Vale um café ☕</span>
+                <canvas id="c4" width="150" height="100" class="absolute top-0 left-0 z-10"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <section id="s6" class="screen bg-amber-50">
+        <div class="glass p-8 w-full max-w-sm">
+            <span class="text-[10px] text-amber-600 font-bold tracking-widest uppercase">Palpites</span>
+            <h2 class="serif text-2xl text-amber-800 mb-6 mt-2">O que você acha que é? 🤔</h2>
+            <div id="quiz-options" class="space-y-3"></div>
+            <p id="quiz-hint" class="mt-6 text-xs italic text-amber-600 font-medium h-4"></p>
+        </div>
+        <button onclick="next(7)" class="mt-8 btn-primary px-10 py-4">FINALIZAR & REVELAR! 🎉</button>
+    </section>
+
+    <section id="s7" class="screen bg-white">
+        <div class="flex flex-col md:flex-row items-center justify-center gap-8 max-w-4xl w-full">
+            <div class="w-72 h-96 photo-frame overflow-hidden bg-white flex-shrink-0 -rotate-2 flex items-center justify-center">
+                <img src="praiaPipa.PNG" alt="Nossa Foto" class="max-w-full max-h-full object-contain">
+            </div>
+            
+            <div class="text-left space-y-4 px-4">
+                <h1 class="serif text-4xl text-amber-800">Parabéns, meu amor! 💘</h1>
+                <p class="text-slate-600 leading-relaxed text-sm">
+                    Espero que essa pequena jornada tenha arrancado um sorriso de você. 
+                    Que o seu novo ano seja tão incrível quanto você é para mim.
+                </p>
+                <div class="p-4 bg-amber-50 rounded-2xl border-l-4 border-amber-400">
+                    <span class="text-[10px] font-bold text-amber-600 uppercase">Seu presente oficial:</span>
+                    <p id="final-present-name" class="serif text-xl text-amber-900 font-bold"></p>
+                </div>
+                <button onclick="location.reload()" class="text-[10px] text-slate-300 uppercase tracking-widest font-bold">Recomeçar experiência</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const quizData = {
+            options: ["Roupinhas 👕", "Ingressos para um show 🎸", "Um óculos 😎", "Uma viagem ✈️"],
+            correct: 1,
+            presentReal: "AINDA NÃO..." // Altere aqui o presente
+        };
+
+        // DADOS DAS MEMÓRIAS (COM FOTOS)
+        const memories = [
+            {t:"Nossa primeira viagem juntos...", i:"✈️", img:"aviaoRio.PNG"}, 
+            {t:"Aqueles momentos celebrando nosso amor...", i:"💗", img:"fondue.PNG"}, 
+            {t:"Cada momento musical...", i:"🎵", img:"showBruninho.PNG"}, 
+            {t:"Nós e o mar...", i:"🏝️", img:"mar.PNG"}
+        ];
+
+        function next(n) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById('s'+n);
+            if(target) target.classList.add('active');
+            
+            if(gameInterval) clearInterval(gameInterval);
+            if(n === 2) startHearts();
+            if(n === 3) startUniverse();
+            if(n === 4) startLetter();
+            if(n === 5) setTimeout(initScratches, 300);
+            if(n === 6) loadQuiz();
+            if(n === 7) {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#d4af37', '#fefae0', '#bc6c25'] });
+                document.getElementById('final-present-name').innerText = quizData.presentReal;
+            }
+        }
+
+        // BACKGROUND PARTICLES
+        const bg = document.getElementById('bg-canvas');
+        const bctx = bg.getContext('2d');
+        let particles = [];
+        function initBg() {
+            bg.width = window.innerWidth; bg.height = window.innerHeight;
+            particles = Array.from({length: 20}, () => ({
+                x: Math.random() * bg.width, y: Math.random() * bg.height,
+                vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2,
+                char: ['🥂', '🎂', '⭐'][Math.floor(Math.random()*3)]
+            }));
+        }
+        function drawBg() {
+            bctx.clearRect(0, 0, bg.width, bg.height);
+            bctx.font = "20px serif";
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 0 || p.x > bg.width) p.vx *= -1;
+                if(p.y < 0 || p.y > bg.height) p.vy *= -1;
+                bctx.globalAlpha = 0.3;
+                bctx.fillText(p.char, p.x, p.y);
+            });
+            requestAnimationFrame(drawBg);
+        }
+
+        function startIntro() {
+            ['t1', 't2', 't3', 'btn-start'].forEach((id, i) => {
+                setTimeout(() => {
+                    const el = document.getElementById(id);
+                    if(el) { el.style.opacity = "1"; el.style.transition = "all 1.5s"; }
+                }, [500, 2000, 3500, 4500][i]);
+            });
+        }
+
+        let score = 0;
+        let gameInterval;
+        function startHearts() {
+            const area = document.getElementById('game-area');
+            score = 0; document.getElementById('score').innerText = score;
+            gameInterval = setInterval(() => {
+                const h = document.createElement('div');
+                h.className = 'heart';
+                h.innerHTML = ['🎈', '🎁'][Math.floor(Math.random()*2)];
+                h.style.left = Math.random() * 80 + 10 + '%';
+                h.style.top = '-50px';
+                area.appendChild(h);
+                const anim = h.animate([{ top: '-50px' }, { top: '110vh' }], { duration: Math.random() * 2000 + 2000 });
+                anim.onfinish = () => h.remove();
+                h.onclick = () => {
+                    score++; document.getElementById('score').innerText = score;
+                    h.innerHTML = '✨';
+                    confetti({ particleCount: 10, spread: 30, origin: { x: h.offsetLeft / window.innerWidth, y: h.offsetTop / window.innerHeight } });
+                    setTimeout(() => h.remove(), 200);
+                    if(score >= 10) { clearInterval(gameInterval); setTimeout(() => next(3), 500); }
+                };
+            }, 700);
+        }
+
+        let viewed = 0;
+        function startUniverse() {
+            const uni = document.getElementById('universe'); uni.innerHTML = '';
+            memories.forEach((m, i) => {
+                const s = document.createElement('div');
+                s.className = 'absolute star opacity-0 transition-all duration-1000 hover:scale-125';
+                s.innerHTML = m.i;
+                s.style.left = (12 + i*24) + '%'; s.style.top = (20 + Math.random()*40) + '%';
+                s.onclick = () => {
+                    const card = document.getElementById('mem-card');
+                    card.classList.remove('hidden');
+                    document.getElementById('mem-text').innerHTML = m.t;
+                    document.getElementById('mem-img').src = m.img;
+                    s.style.filter = "grayscale(1) opacity(0.3)";
+                    s.style.pointerEvents = "none";
+                    viewed++; if(viewed >= 4) document.getElementById('btn-to-letter').classList.remove('hidden');
+                };
+                uni.appendChild(s);
+                setTimeout(() => s.style.opacity = "1", i*400);
+            });
+        }
+        function checkMemories() { document.getElementById('mem-card').classList.add('hidden'); }
+
+        function startLetter() {
+            const text = "Desde que vc entrou na minha vida ela já não é mais a mesma!\n"+
+            "Cada hora, minuto e segundo começaram a passar de uma forma diferente. O abraço mudou de significado. O sorriso também. O amor também. O carinho também.\n"+
+            "Descobri o que é amar e ser amado. Cada dia que passa tenho mais "+
+            "certeza que te quero pra sempre ao meu lado. Obrigado por cada momento, cada partilha, cada alegria e cada dificuldade.\n"+
+            "Que essa nova fase seja marcada por realizações, felicidades, bençãos e muito, muito, muuuuito amor 💗\n"+
+            "Feliz aniversário Momozinho!!! Te amo pra sempre 😊";
+            let i = 0; const target = document.getElementById('typewriter'); target.innerHTML = '';
+            function type() {
+                if(i < text.length) { 
+                    target.innerHTML += text.charAt(i) === '\n' ? '<br>' : text.charAt(i); 
+                    i++; setTimeout(type, 40); 
+                }
+                else { document.getElementById('btn-gift').classList.remove('hidden'); }
+            }
+            type();
+        }
+
+        function initScratches() {
+            ['c1', 'c2', 'c3', 'c4'].forEach(id => {
+                const cvs = document.getElementById(id);
+                const ctx = cvs.getContext('2d');
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.fillStyle = '#d4af37'; 
+                ctx.fillRect(0, 0, 150, 100);
+                
+                let count = 0;
+                function scratch(e) {
+                    const r = cvs.getBoundingClientRect();
+                    const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+                    const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.beginPath(); ctx.arc(x, y, 15, 0, Math.PI * 2); ctx.fill();
+                    count++;
+                    if (count > 30 && id === 'c2') {
+                        document.getElementById('card-correct').style.borderColor = '#d4af37';
+                        cvs.style.pointerEvents = 'none'; cvs.style.opacity = '0';
+                    }
+                }
+                cvs.addEventListener('mousemove', (e) => e.buttons === 1 && scratch(e));
+                cvs.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); }, { passive: false });
+            });
+        }
+
+        function loadQuiz() {
+            let cont = 0;
+            const container = document.getElementById('quiz-options');
+            container.innerHTML = '';
+            quizData.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full p-4 text-left glass border border-amber-100 rounded-xl text-sm transition-all hover:bg-amber-50";
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    cont++;
+                    btn.style.opacity = "0.4"; btn.disabled = true;
+                    document.getElementById('quiz-hint').innerText = "Será? Tente outro! 😜";
+                    if(cont >= 4) document.getElementById('quiz-hint').innerText = "Chega de mistério! Clique abaixo! ❤️";
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        window.onload = () => { initBg(); drawBg(); startIntro(); };
+        window.onresize = initBg;
+    </script>
+</body>
+</html>
